@@ -22,7 +22,7 @@ import java.util.ArrayList;
 
 import javax.net.ssl.HttpsURLConnection;
 
-public class WordSearcher {
+public class WordSearcher { // коментарий на проверку коммита
 
     Word word;
 
