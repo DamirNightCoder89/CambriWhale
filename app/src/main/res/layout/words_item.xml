@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:background="@color/back_light"
+    android:layout_height="125dp">
+    <TextView
+        android:id="@+id/head"
+        android:textSize="@dimen/text_16"
+        android:textColor="@color/text_variant_head"
+
+        android:layout_marginLeft="5dp"
+
+        android:padding="5dp"
+        android:text="Это заголовок (двигаться)"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:id="@+id/example"
+        android:layout_marginLeft="5dp"
+
+        android:padding="5dp"
+        android:textSize="@dimen/text_s"
+        android:textColor="@color/text_variant_body_head"
+        tools:text="Здесь будет очень длинный текс с каким то объяснением"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:id="@+id/translate"
+        android:layout_marginLeft="5dp"
+
+        android:padding="5dp"
+        android:textSize="@dimen/text_s"
+        android:textColor="@color/text_variant_body"
+        tools:text="Это глагол (двигаться)"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+</LinearLayout>

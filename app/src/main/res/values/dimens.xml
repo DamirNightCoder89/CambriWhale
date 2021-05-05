@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="title_big">18sp</dimen>
+    <dimen name="title_small">16dp</dimen>
+    <dimen name="text_s">14sp</dimen>
+    <dimen name="standart_pad">10dp</dimen>
+    <dimen name="standart_mar">10dp</dimen>
+    <dimen name="left_mid_pad">20dp</dimen>
+    <dimen name="big_pad">16dp</dimen>
+    <dimen name="big_mar">16dp</dimen>
+    <dimen name="text_weight_700">700</dimen>
+    <dimen name="text_16">16sp</dimen>
+    <dimen name="list_item_height">45dp</dimen>
+</resources>
