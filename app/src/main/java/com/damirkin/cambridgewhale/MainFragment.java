@@ -118,9 +118,7 @@ public class MainFragment extends Fragment {
         searchView = view.findViewById(R.id.search);
 
         ImageButton deleteBtn = view.findViewById(R.id.delete_btn);
-        deleteBtn.setOnClickListener((v -> {
-            searchView.setText("");
-        }));
+        deleteBtn.setOnClickListener((v -> searchView.setText("")));
 
         ImageButton searchBtn = view.findViewById(R.id.search_btn);
         searchBtn.setOnClickListener((v -> {
@@ -134,7 +132,7 @@ public class MainFragment extends Fragment {
             keyboard.hideSoftInputFromWindow(searchView.getWindowToken(), 0);
         }));
 
-        keyboard = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        keyboard = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
 
         searchView.setOnFocusChangeListener((v, isFoc) -> {
             if (isFoc) {
@@ -163,7 +161,7 @@ public class MainFragment extends Fragment {
             variantsList = (ListView) inflater.inflate(R.layout.listview_list, variantParent, false);
             System.out.println( "Варинт лист первоначально создан");
             if (adapter == null) {
-                adapter = new ArrayAdapter<String>(context, R.layout.variants_item, variants);
+                adapter = new ArrayAdapter<>(context, R.layout.variants_item, variants);
                 variantsList.setAdapter(adapter);
             }
 
@@ -244,12 +242,7 @@ public class MainFragment extends Fragment {
                         if (variants.size() > 0) {
                             /////////////////////////////////////////////////////////////////////////////////////////////////////////
                             Handler mainHandler = new Handler(Looper.getMainLooper());
-                            Runnable myRunnable = new Runnable() {
-                                @Override
-                                public void run() {
-                                    setList(variants);               //////   изучить получше работу этого блока, очень мне помогло
-                                }
-                            };
+                            Runnable myRunnable = () -> setList(variants);
                             mainHandler.post(myRunnable);
                             /////////////////////////////////////////////////////////////////////////////////////////////////
                         } else {
@@ -261,7 +254,6 @@ public class MainFragment extends Fragment {
                         }
                     } catch (IOException ex) {
                         System.out.println("Ошибка не в главном потоке при описке слова");
-                        return;
                     }
                 };
                 Thread thread = new Thread(serachRun);
@@ -281,6 +273,7 @@ public class MainFragment extends Fragment {
         }
     };
 
+
     private void searchWordGo(String search_word) {
         if (search_word.length() > 1) {
 //            ProgressBar progressBar = (ProgressBar) main_v.findViewById(R.id.progressBar);
@@ -291,128 +284,164 @@ public class MainFragment extends Fragment {
                     int cause = wordSearcher.getWord(finalSearch_word);
                     if (cause == 1) {
                                 Handler mainHandler = new Handler(Looper.getMainLooper());
-                                Runnable myRunnable = new Runnable() {
-                                    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
-                                    @Override
-                                    public void run() {
-                                        translate_word = (TextView) getView().findViewById(R.id.item_word);
-                                        searchView.setText(serWord.getName());
-                                        if (translate_word == null) {
-                                            inflater = (LayoutInflater) getLayoutInflater();
-                                            translate_layout = (LinearLayout) inflater.inflate(R.layout.translite_item, variantParent, false);
+
+                                Runnable myRunnable = () -> {
+                                    translate_word = (TextView) main_v.findViewById(R.id.item_word);
+                                    searchView.setText(serWord.getName());
+                                    if (translate_word == null) {
+
+                                        inflater = (LayoutInflater) getLayoutInflater();
+                                        translate_layout = (LinearLayout) inflater.inflate(R.layout.translite_item, variantParent, false);
+                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
                                             translate_layout.setId(View.generateViewId());
-                                            translated_layout = (LinearLayout) inflater.inflate(R.layout.translited_item, variantParent, false);
-                                            translated_layout.setId(View.generateViewId());
-
-                                            ConstraintLayout.LayoutParams layoutParams1 = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT , ConstraintLayout.LayoutParams.WRAP_CONTENT);
-                                            layoutParams1.topToTop = ConstraintLayout.LayoutParams.PARENT_ID;
-                                            layoutParams1.leftToLeft = ConstraintLayout.LayoutParams.PARENT_ID;
-                                            layoutParams1.rightToRight = ConstraintLayout.LayoutParams.PARENT_ID;
-                                            translate_layout.setLayoutParams(layoutParams1);
-                                            variantParent.addView(translate_layout);
-
-                                            ConstraintLayout.LayoutParams layoutParams2 = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT , ConstraintLayout.LayoutParams.WRAP_CONTENT);
-                                            layoutParams2.topToBottom = translate_layout.getId();
-                                            layoutParams2.leftToLeft = ConstraintLayout.LayoutParams.PARENT_ID;
-                                            layoutParams2.rightToRight = ConstraintLayout.LayoutParams.PARENT_ID;
-                                            translated_layout.setLayoutParams(layoutParams2);
-                                            variantParent.addView(translated_layout);
-
-                                            translate_word = (TextView) translate_layout.findViewById(R.id.item_word);
-                                            translate_word.setText(serWord.getName());
-
-                                            transUk = (TextView) translate_layout.findViewById(R.id.uk_transcription);
-                                            transUk.setText("[" + serWord.getUk_trans() + "]");
-                                            transUs = (TextView) translate_layout.findViewById(R.id.us_transcription);
-                                            transUs.setText("[" + serWord.getUs_trans()  + "]");
-
-                                            mPlayerUk = MediaPlayer.create(getContext(), serWord.getUk_audio());
-                                            mPlayerUs = MediaPlayer.create(getContext(), serWord.getUs_audio());
-
-                                            playUk = (ImageButton) translate_layout.findViewById(R.id.uk_soundn);
-                                            playUs = (ImageButton) translate_layout.findViewById(R.id.us_soundn);
-
-                                            playUk.setOnClickListener((v -> {
-                                                playUk.setFocusable(true);
-                                                System.out.println("Воспроизведение началось");
-                                                playUk.setEnabled(false);
-                                                mPlayerUk.start();
-                                                mPlayerUk.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                                                    public void onCompletion(MediaPlayer mp) {
-                                                        playUk.setFocusable(false);
-                                                        playUk.setEnabled(true);
-                                                        System.out.println("Воспроизведение закончилось");
-                                                    }
-
-                                                });
-                                            }));
-                                            playUs.setOnClickListener((v -> {
-                                                playUs.setImageResource(R.drawable.ic_play);
-                                                playUs.setEnabled(false);
-                                                mPlayerUs.start();
-                                                mPlayerUs.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                                                    public void onCompletion(MediaPlayer mp) {
-                                                        playUs.setImageResource(R.drawable.ic_sound);
-                                                        playUs.setEnabled(true);
-                                                    }
-                                                });
-                                            }));
-//////////////////////////////////////////////////////////////
-                                            translated_variants = (ListView) inflater.inflate(R.layout.listview_variants_list, variantParent, false);
-
-                                            title_translated = (TextView) translated_layout.findViewById(R.id.translited_item_word);
-                                            if (serWord.getExamples().size() == 0)
-                                                title_translated.setText("Варинатов переводов для данного слова нет");
-                                            else
-                                                title_translated.setText(serWord.getExamples().get(0).getTranslation());
-
-                                            ConstraintLayout.LayoutParams layoutParams = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT,
-                                                    ConstraintLayout.LayoutParams.WRAP_CONTENT);
-                                            layoutParams.leftToLeft = ConstraintLayout.LayoutParams.PARENT_ID;
-                                            layoutParams.rightToRight = ConstraintLayout.LayoutParams.PARENT_ID;
-                                            layoutParams.topToBottom = translated_layout.getId();
-                                            translated_variants.setLayoutParams(layoutParams);
-
-                                            VariantsAdapter adapter_example = new VariantsAdapter(context, R.layout.words_item, serWord.getExamples());
-                                            translated_variants.setAdapter(adapter_example);
-                                            translated_variants.setDividerHeight((int) TypedValue.applyDimension(
-                                                    TypedValue.COMPLEX_UNIT_DIP, 2, getResources().getDisplayMetrics()));
-                                            setListViewHeightBasedOnRow(translated_variants);
-                                            variantParent.addView(translated_variants);
-                                        } else {
-                                            translate_word.setText(serWord.getName());
-
-                                            transUk.setText("[" + serWord.getUk_trans() + "]");
-                                            transUs.setText("[" + serWord.getUs_trans()  + "]");
-
-                                            mPlayerUk = MediaPlayer.create(getContext(), serWord.getUk_audio());
-                                            System.out.println(serWord.getUk_audio().toString());
-                                            mPlayerUs = MediaPlayer.create(getContext(), serWord.getUs_audio());
-
-                                            variantParent.removeView(translated_variants);
-
-                                            translated_variants = (ListView) inflater.inflate(R.layout.listview_variants_list, variantParent, false);
-
-                                            title_translated = (TextView) translated_layout.findViewById(R.id.translited_item_word);
-                                            if (serWord.getExamples().size() == 0)
-                                                title_translated.setText("Варинатов переводов для данного слова нет");
-                                            else
-                                                title_translated.setText(serWord.getExamples().get(0).getTranslation());
-
-                                            ConstraintLayout.LayoutParams layoutParams = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT,
-                                                    ConstraintLayout.LayoutParams.WRAP_CONTENT);
-                                            layoutParams.leftToLeft = ConstraintLayout.LayoutParams.PARENT_ID;
-                                            layoutParams.rightToRight = ConstraintLayout.LayoutParams.PARENT_ID;
-                                            layoutParams.topToBottom = translated_layout.getId();
-                                            translated_variants.setLayoutParams(layoutParams);
-
-                                            VariantsAdapter adapter_example = new VariantsAdapter(context, R.layout.words_item, serWord.getExamples());
-                                            translated_variants.setAdapter(adapter_example);
-                                            translated_variants.setDividerHeight((int) TypedValue.applyDimension(
-                                                    TypedValue.COMPLEX_UNIT_DIP, 2, getResources().getDisplayMetrics()));
-                                            setListViewHeightBasedOnRow(translated_variants);
-                                            variantParent.addView(translated_variants);
                                         }
+                                        translated_layout = (LinearLayout) inflater.inflate(R.layout.translited_item, variantParent, false);
+                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                                            translated_layout.setId(View.generateViewId());
+                                        }
+
+                                        ConstraintLayout.LayoutParams layoutParams1 = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT , ConstraintLayout.LayoutParams.WRAP_CONTENT);
+                                        layoutParams1.topToTop = ConstraintLayout.LayoutParams.PARENT_ID;
+                                        layoutParams1.leftToLeft = ConstraintLayout.LayoutParams.PARENT_ID;
+                                        layoutParams1.rightToRight = ConstraintLayout.LayoutParams.PARENT_ID;
+                                        translate_layout.setLayoutParams(layoutParams1);
+                                        variantParent.addView(translate_layout);
+
+                                        ConstraintLayout.LayoutParams layoutParams2 = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT , ConstraintLayout.LayoutParams.WRAP_CONTENT);
+                                        layoutParams2.topToBottom = translate_layout.getId();
+                                        layoutParams2.leftToLeft = ConstraintLayout.LayoutParams.PARENT_ID;
+                                        layoutParams2.rightToRight = ConstraintLayout.LayoutParams.PARENT_ID;
+                                        translated_layout.setLayoutParams(layoutParams2);
+                                        variantParent.addView(translated_layout);
+
+                                        translate_word = (TextView) translate_layout.findViewById(R.id.item_word);
+                                        translate_word.setText(serWord.getName());
+
+                                        transUk = (TextView) translate_layout.findViewById(R.id.uk_transcription);
+                                        String UkTransc = "[" + serWord.getUk_trans() + "]";
+                                        transUk.setText(UkTransc);
+                                        transUs = (TextView) translate_layout.findViewById(R.id.us_transcription);
+                                        String UsTransc = "[" + serWord.getUs_trans()  + "]";
+                                        transUs.setText(UsTransc);
+
+//                                            mPlayerUk = MediaPlayer.create(getContext(), serWord.getUk_audio());
+                                        mPlayerUk = new MediaPlayer();
+                                        try {
+                                            mPlayerUk.setDataSource(serWord.getUk_audio().toString());
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                        mPlayerUk.prepareAsync();
+                                        mPlayerUk.setOnCompletionListener(MediaPlayer::start);
+
+//                                            mPlayerUs = MediaPlayer.create(getContext(), serWord.getUs_audio());
+                                        mPlayerUs = new MediaPlayer();
+                                        try {
+                                            mPlayerUs.setDataSource(serWord.getUs_audio().toString());
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                        mPlayerUs.prepareAsync();
+                                        mPlayerUs.setOnCompletionListener(MediaPlayer::start);
+
+                                        playUk = (ImageButton) translate_layout.findViewById(R.id.uk_soundn);
+                                        playUs = (ImageButton) translate_layout.findViewById(R.id.us_soundn);
+
+                                        playUk.setOnClickListener((v -> {
+                                            playUk.setFocusable(true);
+                                            System.out.println("Воспроизведение началось");
+                                            playUk.setEnabled(false);
+                                            mPlayerUk.start();
+                                            mPlayerUk.setOnCompletionListener((mp) -> {
+                                                    playUk.setFocusable(false);
+                                                    playUk.setEnabled(true);
+                                                    System.out.println("Воспроизведение закончилось");
+                                                }
+                                            );
+                                        }));
+                                        playUs.setOnClickListener((v -> {
+                                            playUs.setImageResource(R.drawable.ic_play);
+                                            playUs.setEnabled(false);
+                                            mPlayerUs.start();
+                                            mPlayerUs.setOnCompletionListener((mp) -> {
+                                                    playUs.setImageResource(R.drawable.ic_sound);
+                                                    playUs.setEnabled(true);
+                                                }
+                                            );
+                                        }));
+//////////////////////////////////////////////////////////////
+                                        translated_variants = (ListView) inflater.inflate(R.layout.listview_variants_list, variantParent, false);
+
+                                        title_translated = (TextView) translated_layout.findViewById(R.id.translited_item_word);
+                                        if (serWord.getExamples().size() == 0)
+                                            title_translated.setText("Варинатов переводов для данного слова нет");
+                                        else
+                                            title_translated.setText(serWord.getExamples().get(0).getTranslation());
+
+                                        ConstraintLayout.LayoutParams layoutParams = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT,
+                                                ConstraintLayout.LayoutParams.WRAP_CONTENT);
+                                        layoutParams.leftToLeft = ConstraintLayout.LayoutParams.PARENT_ID;
+                                        layoutParams.rightToRight = ConstraintLayout.LayoutParams.PARENT_ID;
+                                        layoutParams.topToBottom = translated_layout.getId();
+                                        translated_variants.setLayoutParams(layoutParams);
+
+                                        VariantsAdapter adapter_example = new VariantsAdapter(context, R.layout.words_item, serWord.getExamples());
+                                        translated_variants.setAdapter(adapter_example);
+                                        translated_variants.setDividerHeight((int) TypedValue.applyDimension(
+                                                TypedValue.COMPLEX_UNIT_DIP, 2, getResources().getDisplayMetrics()));
+                                        setListViewHeightBasedOnRow(translated_variants);
+                                        variantParent.addView(translated_variants);
+                                    } else {
+                                        translate_word.setText(serWord.getName());
+
+                                        String UkTransc = "[" + serWord.getUk_trans() + "]";
+                                        transUk.setText(UkTransc);
+                                        String UsTransc = "[" + serWord.getUs_trans()  + "]";
+                                        transUs.setText(UsTransc);
+
+//                                            mPlayerUk = MediaPlayer.create(getContext(), serWord.getUk_audio());
+                                        mPlayerUk.reset();
+                                        try {
+                                            mPlayerUk.setDataSource(serWord.getUk_audio().toString());
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                        mPlayerUk.prepareAsync();
+                                        System.out.println(serWord.getUk_audio().toString());
+
+//                                            mPlayerUs = MediaPlayer.create(getContext(), serWord.getUs_audio());
+                                        mPlayerUs.reset();
+                                        try {
+                                            mPlayerUs.setDataSource(serWord.getUs_audio().toString());
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                        mPlayerUs.prepareAsync();
+                                        System.out.println(serWord.getUs_audio().toString());
+
+                                        variantParent.removeView(translated_variants);
+
+                                        translated_variants = (ListView) inflater.inflate(R.layout.listview_variants_list, variantParent, false);
+
+                                        title_translated = (TextView) translated_layout.findViewById(R.id.translited_item_word);
+                                        if (serWord.getExamples().size() == 0)
+                                            title_translated.setText("Варинатов переводов для данного слова нет");
+                                        else
+                                            title_translated.setText(serWord.getExamples().get(0).getTranslation());
+
+                                        ConstraintLayout.LayoutParams layoutParams = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT,
+                                                ConstraintLayout.LayoutParams.WRAP_CONTENT);
+                                        layoutParams.leftToLeft = ConstraintLayout.LayoutParams.PARENT_ID;
+                                        layoutParams.rightToRight = ConstraintLayout.LayoutParams.PARENT_ID;
+                                        layoutParams.topToBottom = translated_layout.getId();
+                                        translated_variants.setLayoutParams(layoutParams);
+
+                                        VariantsAdapter adapter_example = new VariantsAdapter(context, R.layout.words_item, serWord.getExamples());
+                                        translated_variants.setAdapter(adapter_example);
+                                        translated_variants.setDividerHeight((int) TypedValue.applyDimension(
+                                                TypedValue.COMPLEX_UNIT_DIP, 2, getResources().getDisplayMetrics()));
+                                        setListViewHeightBasedOnRow(translated_variants);
+                                        variantParent.addView(translated_variants);
                                     }
                                 };
                                 mainHandler.post(myRunnable);
